@@ -15,7 +15,7 @@ export function initQueryExecution() {
     const executionTab = document.querySelector('.tab[data-tab="execution-tab"]');
     const checkContainer = document.getElementById('check-container');
     const refreshIcon = document.querySelector('[data-tab="execution-tab"] .refresh');
-    const checkIcon = document.querySelector('[data-tab="execution-tab"] .check');
+    const executedIcon = document.querySelector('[data-tab="execution-tab"] .executed');
     const emptyIcon = document.querySelector('[data-tab="execution-tab"] .empty');
     window.sqlEditor.on('change', handleEditorChange);
 
@@ -38,6 +38,9 @@ export function initQueryExecution() {
             executionTab.removeEventListener('click', triggerExecutionOfNewQuery);
             setTabIconTo(emptyIcon);
         }
+
+        // The query cannot be checked as long as it has not been executed
+        checkContainer.classList.remove('data-check-failed-for')
         checkContainer.classList.add(('hidden'));
     }
 
@@ -46,7 +49,7 @@ export function initQueryExecution() {
      * @param {HTMLElement} iconToShow - The icon element to show.
      */
     function setTabIconTo(iconToShow) {
-        checkIcon.classList.toggle('hidden', checkIcon !== iconToShow);
+        executedIcon.classList.toggle('hidden', executedIcon !== iconToShow);
         refreshIcon.classList.toggle('hidden', refreshIcon !== iconToShow);
         emptyIcon.classList.toggle('hidden', emptyIcon !== iconToShow);
     }
@@ -75,8 +78,13 @@ export function initQueryExecution() {
 
         const result = await runQueryAndRenderResults(query);
         executionTab.removeEventListener('click', triggerExecutionOfNewQuery);
-        setTabIconTo(checkIcon);
+        setTabIconTo(executedIcon);
+
+        // Display the check container iff the execution has returned a non-empty result set
         checkContainer.classList.toggle('hidden', !result || result.rows.length === 0);
+
+        // Remove the mark indicating that the check has failed for this activity/task.
+        checkContainer.classList.remove('data-check-failed-for');
     }
 
     /**
